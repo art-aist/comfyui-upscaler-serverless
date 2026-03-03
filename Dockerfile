@@ -94,15 +94,15 @@ RUN FAILED="" && \
 
 # 4x Upscale Model (~82MB)
 RUN mkdir -p $COMFYUI_PATH/models/upscale_models && \
-    echo "Downloading 4xNomos8k_atd_jpg.pth..." && \
-    wget -q --show-progress -O $COMFYUI_PATH/models/upscale_models/4xNomos8k_atd_jpg.pth \
-    "https://huggingface.co/Phips/4xNomos8k_atd_jpg/resolve/main/4xNomos8k_atd_jpg.pth"
+    echo "Downloading 4xNomos8k_atd_jpg.safetensors..." && \
+    wget -q --show-progress -O $COMFYUI_PATH/models/upscale_models/4xNomos8k_atd_jpg.safetensors \
+    "https://huggingface.co/Phips/4xNomos8k_atd_jpg/resolve/main/4xNomos8k_atd_jpg.safetensors"
 
 # FLUX VAE (~335MB)
 RUN mkdir -p $COMFYUI_PATH/models/vae && \
     echo "Downloading ae.safetensors..." && \
     wget -q --show-progress -O $COMFYUI_PATH/models/vae/ae.safetensors \
-    "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors"
+    "https://huggingface.co/ffxvs/vae-flux/resolve/main/ae.safetensors"
 
 # CLIP-G (~1.4GB) + ViT-L-14 (~0.9GB)
 RUN mkdir -p $COMFYUI_PATH/models/clip && \
@@ -153,7 +153,7 @@ import os; \
 models = { \
     'Diffusion': 'models/diffusion_models/fluxSigmaVision_fp16.safetensors', \
     'VAE': 'models/vae/ae.safetensors', \
-    'Upscale': 'models/upscale_models/4xNomos8k_atd_jpg.pth', \
+    'Upscale': 'models/upscale_models/4xNomos8k_atd_jpg.safetensors', \
     'ControlNet': 'models/controlnet/fluxControlnetUpscale_v10.safetensors', \
     'CLIP-G': 'models/clip/clip_g.safetensors', \
     'ViT-L': 'models/clip/ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF.safetensors', \

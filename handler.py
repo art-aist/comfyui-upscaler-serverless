@@ -83,7 +83,7 @@ UPSCALE_WORKFLOW = {
         "_meta": {"title": "Load VAE"},
     },
     "4": {
-        "inputs": {"model_name": "4xNomos8k_atd_jpg.pth"},
+        "inputs": {"model_name": "4xNomos8k_atd_jpg.safetensors"},
         "class_type": "UpscaleModelLoader",
         "_meta": {"title": "Load Upscale Model"},
     },
