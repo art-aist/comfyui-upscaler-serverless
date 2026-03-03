@@ -87,57 +87,41 @@ RUN FAILED="" && \
     fi
 
 # =============================================================
-# Download models (8 models, ~39GB total)
-# Each large model is a separate RUN for Docker layer caching.
+# Download ALL models in one RUN (single layer = saves disk on CI)
+# Total: ~39GB
 # =============================================================
 
-# --- Small models first (cache-friendly) ---
-
-# 4x Upscale Model (~82MB)
-RUN mkdir -p $COMFYUI_PATH/models/upscale_models && \
-    echo "Downloading 4xNomos8k_atd_jpg.safetensors..." && \
-    wget -q --show-progress -O $COMFYUI_PATH/models/upscale_models/4xNomos8k_atd_jpg.safetensors \
-    "https://huggingface.co/Phips/4xNomos8k_atd_jpg/resolve/main/4xNomos8k_atd_jpg.safetensors"
-
-# FLUX VAE (~335MB)
-RUN mkdir -p $COMFYUI_PATH/models/vae && \
-    echo "Downloading ae.safetensors..." && \
-    wget -q --show-progress -O $COMFYUI_PATH/models/vae/ae.safetensors \
-    "https://huggingface.co/ffxvs/vae-flux/resolve/main/ae.safetensors"
-
-# CLIP-G (~1.4GB) + ViT-L-14 (~0.9GB)
-RUN mkdir -p $COMFYUI_PATH/models/clip && \
-    echo "Downloading clip_g.safetensors..." && \
-    wget -q --show-progress -O $COMFYUI_PATH/models/clip/clip_g.safetensors \
+RUN mkdir -p $COMFYUI_PATH/models/upscale_models \
+             $COMFYUI_PATH/models/vae \
+             $COMFYUI_PATH/models/clip \
+             $COMFYUI_PATH/models/loras \
+             $COMFYUI_PATH/models/controlnet \
+             $COMFYUI_PATH/models/diffusion_models && \
+    echo "=== [1/8] 4xNomos8k_atd_jpg (82MB) ===" && \
+    wget -q -O $COMFYUI_PATH/models/upscale_models/4xNomos8k_atd_jpg.safetensors \
+    "https://huggingface.co/Phips/4xNomos8k_atd_jpg/resolve/main/4xNomos8k_atd_jpg.safetensors" && \
+    echo "=== [2/8] ae.safetensors VAE (335MB) ===" && \
+    wget -q -O $COMFYUI_PATH/models/vae/ae.safetensors \
+    "https://huggingface.co/ffxvs/vae-flux/resolve/main/ae.safetensors" && \
+    echo "=== [3/8] clip_g (1.4GB) ===" && \
+    wget -q -O $COMFYUI_PATH/models/clip/clip_g.safetensors \
     "https://huggingface.co/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_g.safetensors" && \
-    echo "Downloading ViT-L-14..." && \
-    wget -q --show-progress -O "$COMFYUI_PATH/models/clip/ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF.safetensors" \
-    "https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14/resolve/main/ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF.safetensors"
-
-# Hyper-FLUX LoRA (~1.39GB)
-RUN mkdir -p $COMFYUI_PATH/models/loras && \
-    echo "Downloading Hyper-FLUX LoRA..." && \
-    wget -q --show-progress -O $COMFYUI_PATH/models/loras/Hyper-FLUX.1-dev-8steps-lora.safetensors \
-    "https://huggingface.co/ByteDance/Hyper-SD/resolve/main/Hyper-FLUX.1-dev-8steps-lora.safetensors"
-
-# --- Large models (separate layers) ---
-
-# ControlNet Upscale (~3.58GB) — renamed from diffusion_pytorch_model.safetensors
-RUN mkdir -p $COMFYUI_PATH/models/controlnet && \
-    echo "Downloading ControlNet Upscale..." && \
-    wget -q --show-progress -O $COMFYUI_PATH/models/controlnet/fluxControlnetUpscale_v10.safetensors \
-    "https://huggingface.co/jasperai/Flux.1-dev-Controlnet-Upscaler/resolve/main/diffusion_pytorch_model.safetensors"
-
-# T5-XXL FP16 (~9.5GB)
-RUN echo "Downloading t5xxl_fp16.safetensors..." && \
-    wget -q --show-progress -O $COMFYUI_PATH/models/clip/t5xxl_fp16.safetensors \
-    "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors"
-
-# FLUX Sigma Vision Alpha1 (~22.15GB) — from CivitAI, renamed
-RUN mkdir -p $COMFYUI_PATH/models/diffusion_models && \
-    echo "Downloading fluxSigmaVision_fp16.safetensors (~22GB, this will take a while)..." && \
-    wget -q --show-progress -O $COMFYUI_PATH/models/diffusion_models/fluxSigmaVision_fp16.safetensors \
-    "https://civitai.com/api/download/models/1378381?token=${CIVITAI_TOKEN}"
+    echo "=== [4/8] ViT-L-14 (0.9GB) ===" && \
+    wget -q -O "$COMFYUI_PATH/models/clip/ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF.safetensors" \
+    "https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14/resolve/main/ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF.safetensors" && \
+    echo "=== [5/8] Hyper-FLUX LoRA (1.4GB) ===" && \
+    wget -q -O $COMFYUI_PATH/models/loras/Hyper-FLUX.1-dev-8steps-lora.safetensors \
+    "https://huggingface.co/ByteDance/Hyper-SD/resolve/main/Hyper-FLUX.1-dev-8steps-lora.safetensors" && \
+    echo "=== [6/8] ControlNet Upscale (3.6GB) ===" && \
+    wget -q -O $COMFYUI_PATH/models/controlnet/fluxControlnetUpscale_v10.safetensors \
+    "https://huggingface.co/jasperai/Flux.1-dev-Controlnet-Upscaler/resolve/main/diffusion_pytorch_model.safetensors" && \
+    echo "=== [7/8] t5xxl_fp16 (9.5GB) ===" && \
+    wget -q -O $COMFYUI_PATH/models/clip/t5xxl_fp16.safetensors \
+    "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors" && \
+    echo "=== [8/8] fluxSigmaVision_fp16 (22GB) ===" && \
+    wget -q -O $COMFYUI_PATH/models/diffusion_models/fluxSigmaVision_fp16.safetensors \
+    "https://civitai.com/api/download/models/1378381?token=${CIVITAI_TOKEN}" && \
+    echo "=== All models downloaded ==="
 
 # --- Copy handler ---
 COPY handler.py /opt/handler.py
