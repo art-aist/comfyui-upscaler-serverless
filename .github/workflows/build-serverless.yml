@@ -41,14 +41,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Quick patch build: overlay handler on existing image (~3 min)
+      # For full rebuild, change to Dockerfile and uncomment build-args
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile.patch
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/comfyui-upscaler-serverless:latest
-          build-args: |
-            CIVITAI_TOKEN=${{ secrets.CIVITAI_TOKEN }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max

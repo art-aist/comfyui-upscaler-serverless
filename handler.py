@@ -108,6 +108,7 @@ UPSCALE_WORKFLOW = {
             "seam_fix_padding": 16,
             "force_uniform_tiles": True,
             "tiled_decode": False,
+            "batch_size": 1,
             "image": ["69", 0],
             "model": ["179", 0],
             "positive": ["81", 0],

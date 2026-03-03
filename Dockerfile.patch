@@ -1,0 +1,7 @@
+# Quick-patch: overlay handler.py on top of existing image (no model re-download)
+# Build time: ~2-3 minutes vs ~2 hours for full rebuild
+FROM art1aist/comfyui-upscaler-serverless:latest
+COPY handler.py /opt/handler.py
+COPY check.py /tmp/check.py
+RUN python3 /tmp/check.py
+CMD ["python3", "/opt/handler.py"]
