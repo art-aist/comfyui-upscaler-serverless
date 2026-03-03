@@ -56,15 +56,16 @@ RUN pip install --no-cache-dir \
     "requests>=2.31.0" \
     "openai>=1.0.0"
 
-# --- Install custom nodes (7 repos) ---
+# --- Install custom nodes (7 repos, with retry for transient GitHub 500s) ---
 RUN cd $COMFYUI_PATH/custom_nodes && \
-    git clone --depth 1 https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git && \
-    git clone --depth 1 https://github.com/filliptm/ComfyUI_Fill-Nodes.git && \
-    git clone --depth 1 https://github.com/rgthree/rgthree-comfy.git && \
-    git clone --depth 1 https://github.com/EllangoK/ComfyUI-post-processing-nodes.git && \
-    git clone --depth 1 https://github.com/robertvoy/ComfyUI-Flux-Continuum.git && \
-    git clone --depth 1 https://github.com/Jonseed/ComfyUI-Detail-Daemon.git && \
-    git clone --depth 1 https://github.com/yolain/ComfyUI-Easy-Use.git
+    retry() { git clone --depth 1 "$1" || (sleep 5 && git clone --depth 1 "$1") || (sleep 10 && git clone --depth 1 "$1"); } && \
+    retry https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git && \
+    retry https://github.com/filliptm/ComfyUI_Fill-Nodes.git && \
+    retry https://github.com/rgthree/rgthree-comfy.git && \
+    retry https://github.com/EllangoK/ComfyUI-post-processing-nodes.git && \
+    retry https://github.com/robertvoy/ComfyUI-Flux-Continuum.git && \
+    retry https://github.com/Jonseed/ComfyUI-Detail-Daemon.git && \
+    retry https://github.com/yolain/ComfyUI-Easy-Use.git
 
 # --- Install node pip requirements ---
 RUN FAILED="" && \
