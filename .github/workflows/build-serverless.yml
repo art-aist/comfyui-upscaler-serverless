@@ -11,17 +11,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Free ~30GB by removing pre-installed SDKs (needed for 39GB of models)
+      # Free ~50GB by removing pre-installed SDKs (needed for 39GB+ image)
       - name: Free disk space
         run: |
+          echo "=== BEFORE cleanup ==="
           df -h /
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache
-          sudo rm -rf /usr/local/share/boost
-          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/share/dotnet            # ~6GB
+          sudo rm -rf /usr/local/lib/android        # ~10GB
+          sudo rm -rf /opt/ghc                      # ~2GB
+          sudo rm -rf /opt/hostedtoolcache          # ~5GB
+          sudo rm -rf /usr/local/share/boost        # ~2GB
+          sudo rm -rf /usr/share/swift              # ~2GB
+          sudo rm -rf /usr/local/graalvm            # ~1.3GB
+          sudo rm -rf /usr/local/.ghcup             # ~3GB
+          sudo rm -rf /opt/pipx                     # ~1GB
+          sudo rm -rf /usr/local/sqlpackage         # ~0.5GB
+          sudo rm -rf /usr/share/az_*               # ~1GB
+          sudo rm -rf /usr/share/miniconda          # ~0.5GB
+          sudo rm -rf /usr/local/share/powershell   # ~0.5GB
           sudo docker image prune -af
+          sudo apt-get clean
+          echo "=== AFTER cleanup ==="
           df -h /
 
       - uses: docker/setup-buildx-action@v3

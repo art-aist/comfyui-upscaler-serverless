@@ -50,12 +50,6 @@ WORKDIR $COMFYUI_PATH
 RUN grep -v -E "^(torch|torchvision|torchaudio)([ ><=!]|$)" requirements.txt > /tmp/comfy_req.txt && \
     pip install --no-cache-dir -r /tmp/comfy_req.txt
 
-# --- Install RunPod SDK + OpenAI SDK ---
-RUN pip install --no-cache-dir \
-    "runpod>=1.7.0" \
-    "requests>=2.31.0" \
-    "openai>=1.0.0"
-
 # --- Install custom nodes (7 repos, with retry for transient GitHub 500s) ---
 RUN cd $COMFYUI_PATH/custom_nodes && \
     retry() { git clone --depth 1 "$1" || (sleep 5 && git clone --depth 1 "$1") || (sleep 10 && git clone --depth 1 "$1"); } && \
@@ -86,6 +80,12 @@ RUN FAILED="" && \
     else \
       echo "All node deps installed OK"; \
     fi
+
+# --- Install RunPod SDK + OpenAI SDK (AFTER node deps, so they don't get overwritten) ---
+RUN pip install --no-cache-dir \
+    "runpod>=1.7.0" \
+    "requests>=2.31.0" \
+    "openai>=1.0.0"
 
 # =============================================================
 # Download ALL models in one RUN (single layer = saves disk on CI)
@@ -124,36 +124,12 @@ RUN mkdir -p $COMFYUI_PATH/models/upscale_models \
     "https://civitai.com/api/download/models/1378381?token=${CIVITAI_TOKEN}" && \
     echo "=== All models downloaded ==="
 
-# --- Copy handler ---
+# --- Copy handler + check script ---
 COPY handler.py /opt/handler.py
+COPY check.py /tmp/check.py
 
-# --- Final check ---
-RUN python3 -c "\
-import torch; \
-print('=== Image Upscaler Serverless — Final Check ==='); \
-print(f'PyTorch: {torch.__version__}'); \
-print(f'CUDA: {torch.version.cuda}'); \
-import runpod; print(f'RunPod SDK: {runpod.__version__}'); \
-import openai; print(f'OpenAI: {openai.__version__}'); \
-import os; \
-models = { \
-    'Diffusion': 'models/diffusion_models/fluxSigmaVision_fp16.safetensors', \
-    'VAE': 'models/vae/ae.safetensors', \
-    'Upscale': 'models/upscale_models/4xNomos8k_atd_jpg.safetensors', \
-    'ControlNet': 'models/controlnet/fluxControlnetUpscale_v10.safetensors', \
-    'CLIP-G': 'models/clip/clip_g.safetensors', \
-    'ViT-L': 'models/clip/ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF.safetensors', \
-    'T5XXL': 'models/clip/t5xxl_fp16.safetensors', \
-    'LoRA': 'models/loras/Hyper-FLUX.1-dev-8steps-lora.safetensors', \
-}; \
-for name, path in models.items(): \
-    full = f'/opt/ComfyUI/{path}'; \
-    sz = f'{os.path.getsize(full)/1e9:.2f}GB' if os.path.exists(full) else 'MISSING!'; \
-    print(f'  {name}: {sz}'); \
-nodes = os.listdir('/opt/ComfyUI/custom_nodes'); \
-print(f'Custom nodes: {len(nodes)} installed'); \
-print('Build OK!'); \
-"
+# --- Final check (validates imports + model sizes) ---
+RUN python3 /tmp/check.py
 
 # --- Entrypoint ---
 CMD ["python3", "/opt/handler.py"]
