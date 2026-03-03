@@ -41,7 +41,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # --- Clone ComfyUI ---
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git $COMFYUI_PATH
+RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git $COMFYUI_PATH || \
+    (sleep 5 && git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git $COMFYUI_PATH)
 
 WORKDIR $COMFYUI_PATH
 
