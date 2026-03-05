@@ -65,7 +65,7 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 comfyui_process = None
 
 MAX_IMAGE_DIM = 4000
-MAX_RESPONSE_BYTES = 20 * 1024 * 1024  # 20MB RunPod response limit
+MAX_RESPONSE_BYTES = 7 * 1024 * 1024  # 7MB safe limit (RunPod rejects >~10MB)
 OOM_MAX_RETRIES = 2
 OOM_UPSCALE_REDUCTION = 0.5
 
